@@ -12,6 +12,8 @@ import {
 import Tabs from "./navigation/Tabs";
 import Stack from "./navigation/Stack";
 import Root from "./navigation/Root";
+import {ThemeProvider} from "styled-components";
+import {darkTheme, lightTheme} from "./styled";
 
 const loadFonts = (fonts) => fonts.map((font) => Font.loadAsync(font));
 
@@ -31,6 +33,9 @@ export default function App() {
         const fonts = loadFonts([Ionicons.font]);
         await Promise.all([...fonts]);
     };
+
+    const isDark = useColorScheme() === "dark";
+
     if (!ready) {
         return (
             <AppLoading
@@ -41,8 +46,11 @@ export default function App() {
         );
     }
     return (
-        <NavigationContainer>
-            <Root/>
-        </NavigationContainer>
+        <ThemeProvider theme={isDark ? darkTheme : lightTheme}>
+            <NavigationContainer>
+                <Root/>
+            </NavigationContainer>
+        </ThemeProvider>
+
     );
 }
