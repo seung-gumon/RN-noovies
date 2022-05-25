@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState, useTransition} from 'react';
-import {ActivityIndicator, StyleSheet, Text} from "react-native";
+import {ActivityIndicator, StyleSheet, Text, useColorScheme} from "react-native";
 import {Dimensions} from 'react-native'
 import styled from "styled-components/native";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
@@ -36,7 +36,7 @@ const BgImg = styled.Image`
 `
 
 const Title = styled.Text`
-    color: ${(props) => props.theme.textColor};
+    
 `
 
 const {height: SCREEN_HEIGHT} = Dimensions.get("window");
@@ -47,8 +47,13 @@ const {height: SCREEN_HEIGHT} = Dimensions.get("window");
 const Movies: React.FC<NativeStackScreenProps<any, "Movies">> = ({navigation: {navigate}}) => {
 
 
+
+
     const [loading, setLoading] = useState(true);
     const [nowPlayingMovies, setNowPlayingMovies] = useState([]);
+
+
+    const isDark = useColorScheme() === "dark";
 
 
     useEffect(() => {
@@ -80,6 +85,7 @@ const Movies: React.FC<NativeStackScreenProps<any, "Movies">> = ({navigation: {n
                                 <View key={movie.id}>
                                     <BgImg source={{uri : makeImgPath(movie.backdrop_path)}} style={StyleSheet.absoluteFill}/>
                                     <BlurView
+                                        tint={isDark ? "dark" : "light"}
                                         intensity={40}
                                         style={StyleSheet.absoluteFill}>
                                         <Title>{movie.original_title}</Title>

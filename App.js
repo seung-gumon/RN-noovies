@@ -13,7 +13,7 @@ import Tabs from "./navigation/Tabs";
 import Stack from "./navigation/Stack";
 import Root from "./navigation/Root";
 import {ThemeProvider} from "styled-components";
-import {darkTheme, lightTheme} from "./styled";
+import {lightTheme , darkTheme} from "./styled";
 
 const loadFonts = (fonts) => fonts.map((font) => Font.loadAsync(font));
 
