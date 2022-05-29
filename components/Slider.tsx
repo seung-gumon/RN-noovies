@@ -1,9 +1,9 @@
 import React from 'react';
-import {makeImgPath} from "../utils";
 import {StyleSheet, useColorScheme} from "react-native";
 import {BlurView} from "expo-blur";
 import styled from "styled-components/native";
 import {View} from "react-native";
+import Poster from "./Poster";
 
 interface ISlider {
     backdrop_path : string | null
@@ -34,7 +34,7 @@ const Slider: React.FC<ISlider> =
                 intensity={60}
                 style={StyleSheet.absoluteFill}>
                 <Wrapper>
-                    <Poster source={{uri: makeImgPath(poster_path)}}/>
+                    <Poster path={poster_path}/>
                     <Column>
                         <Title isDark={isDark}>{original_title}</Title>
                         {vote_average > 0 ? (
@@ -60,11 +60,7 @@ const BgImg = styled.Image`
 `
 
 
-const Poster = styled.Image`
-  width: 100px;
-  height: 160px;
-  border-radius: 5px;
-`
+
 
 const Title = styled.Text<{ isDark: boolean }>`
   font-size: 16px;
