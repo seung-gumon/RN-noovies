@@ -62,9 +62,10 @@ const BgImg = styled.Image`
 
 
 
-const Title = styled.Text<{ isDark: boolean }>`
+export const Title = styled.Text<{ isDark: boolean }>`
   font-size: 16px;
   font-weight: 600;
+  margin-top: 5px;
   color: ${props => props.isDark ? "rgba(255, 255, 255, 0.6)" : "rgba(0,0,0,0.6)"};
 `
 
@@ -88,7 +89,7 @@ const OverView = styled.Text<{ isDark: boolean }>`
 `
 
 
-const Vote = styled(OverView)`
-  margin: 10px 0;
+export const Vote = styled(OverView)`
+  margin-top: 5px;
   font-size: 12px;
 `
