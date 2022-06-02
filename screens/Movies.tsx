@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState, useTransition} from 'react';
-import {ActivityIndicator, ScrollView, useColorScheme} from "react-native";
+import {ActivityIndicator, RefreshControl, ScrollView, useColorScheme} from "react-native";
 import {Dimensions} from 'react-native'
 import styled from "styled-components/native";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
@@ -7,7 +7,6 @@ import Swiper from 'react-native-swiper';
 import {makeImgPath} from "../utils";
 import Slider, {Title, Vote} from "../components/Slider";
 import Poster from "../components/Poster";
-
 
 
 const API_KEY = "c612e14da1356358b6c7e5ac139b9843";
@@ -30,7 +29,7 @@ const ListTitle = styled.Text<{ isDark: boolean }>`
   font-size: 18px;
   font-weight: 600;
   color: ${props => props.isDark ? "rgba(255, 255, 255, 0.6)" : "rgba(0,0,0,0.6)"};
-  margin-left: 30px;
+  margin-left: 15px;
   margin-bottom: 10px;
 `
 
@@ -38,6 +37,36 @@ const Movie = styled.View`
   margin-right: 20px;
   align-items: center;
 `;
+
+const ListContainer = styled.View`
+  margin-bottom: 40px;
+`
+
+const HMovie = styled.View`
+  padding: 0 15px;
+  flex-direction: row;
+`
+
+const HColumn = styled.View`
+  margin-left: 15px;
+  width: 80%;
+  margin-vertical: 10px;
+`
+
+const OverView = styled.Text<{ isDark: boolean }>`
+  color: ${props => props.isDark ? "rgba(255, 255, 255, 0.6)" : "rgba(0,0,0,0.6)"};
+  width: 80%;
+`
+
+const Release = styled.Text<{ isDark: boolean }>`
+  color: ${props => props.isDark ? "rgba(255, 255, 255, 0.6)" : "rgba(0,0,0,0.6)"};
+  font-size: 12px;
+  margin-vertical: 10px;
+`
+
+const ComingSoonTitle = styled(ListTitle)`
+  margin-bottom: 30px;
+`
 
 
 const {height: SCREEN_HEIGHT} = Dimensions.get("window");
@@ -47,6 +76,7 @@ const Movies: React.FC<NativeStackScreenProps<any, "Movies">> = ({navigation: {n
 
     const isDark = useColorScheme() === "dark";
 
+    const [refreshing , setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
     const [nowPlayingMovies, setNowPlayingMovies] = useState([]);
     const [upcoming, setUpcoming] = useState([]);
@@ -76,14 +106,18 @@ const Movies: React.FC<NativeStackScreenProps<any, "Movies">> = ({navigation: {n
     }
 
 
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await getData();
+        setRefreshing(false);
+    }
+
+
     useEffect(() => {
         getData()
     }, [])
 
 
-    useEffect(() => {
-        console.log(trending)
-    }, [trending])
 
 
     return loading ?
@@ -93,7 +127,7 @@ const Movies: React.FC<NativeStackScreenProps<any, "Movies">> = ({navigation: {n
 
         :
         (
-            <Container>
+            <Container refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
                 <Swiper
                     horizontal
                     loop
@@ -117,22 +151,53 @@ const Movies: React.FC<NativeStackScreenProps<any, "Movies">> = ({navigation: {n
                         })
                     }
                 </Swiper>
-                <ListTitle isDark={isDark}>Trending Movies</ListTitle>
-                <ScrollView
-                    contentContainerStyle={{paddingLeft: 30}}
-                    horizontal={true}
-                    showsHorizontalScrollIndicator={false}>
-                    {trending?.map((movie: any) => {
-                        return (
-                            <Movie key={movie.id}>
-                                <Poster path={makeImgPath(movie.poster_path)}/>
-                                <Title isDark={isDark}>{movie.original_title.slice(0,13)}{movie.original_title.length > 13 && "..."}</Title>
-                                <Vote isDark={isDark}>⭐️{movie.vote_average} / 10</Vote>
-                            </Movie>
-                        )
-                    })
-                    }
-                </ScrollView>
+                <ListContainer>
+                    <ListTitle isDark={isDark}>Trending Movies</ListTitle>
+                    <ScrollView
+                        contentContainerStyle={{paddingLeft: 15}}
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}>
+                        {trending?.map((movie: any) => {
+                            return (
+                                <Movie key={movie.id}>
+                                    <Poster path={makeImgPath(movie.poster_path)}/>
+                                    <Title
+                                        isDark={isDark}>{movie.original_title.slice(0, 13)}{movie.original_title.length > 13 && "..."}</Title>
+                                    <Vote isDark={isDark}>⭐️{movie.vote_average} / 10</Vote>
+                                </Movie>
+                            )
+                        })
+                        }
+                    </ScrollView>
+                </ListContainer>
+                <ComingSoonTitle isDark={isDark}>Coming Soon</ComingSoonTitle>
+                {upcoming.map((movie: any) => {
+                    return (
+                        <HMovie key={movie.id}>
+                            <Poster path={movie.poster_path}/>
+                            <HColumn>
+                                <Title isDark={isDark}>
+                                    {movie.original_title}{movie.original_title.length > 13 && "..."}
+                                </Title>
+                                <OverView isDark={isDark}>
+                                    {
+                                        movie.overview !== "" && movie.overview.length > 13 ?
+                                            `${movie.overview.slice(0, 120)}...`
+                                            :
+                                            movie.overview
+                                    }
+                                </OverView>
+                                <Release isDark={isDark}>
+                                    Coming : {new Date(movie.release_date).toLocaleDateString('ko', {
+                                    month: "long",
+                                    day: "numeric",
+                                    year: "numeric"
+                                })}
+                                </Release>
+                            </HColumn>
+                        </HMovie>
+                    )
+                })}
             </Container>
         )
 }
