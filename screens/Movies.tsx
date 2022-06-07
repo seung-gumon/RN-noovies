@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState, useTransition} from 'react';
-import {ActivityIndicator, RefreshControl, ScrollView, useColorScheme} from "react-native";
+import {ActivityIndicator, FlatList, RefreshControl, ScrollView, useColorScheme, View, Text} from "react-native";
 import {Dimensions} from 'react-native'
 import styled from "styled-components/native";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
@@ -12,7 +12,7 @@ import Poster from "../components/Poster";
 const API_KEY = "c612e14da1356358b6c7e5ac139b9843";
 
 
-const Container = styled.ScrollView`
+const Container = styled.FlatList`
   background-color: ${(props) => props.theme.mainBgColor};
 `
 
@@ -34,7 +34,7 @@ const ListTitle = styled.Text<{ isDark: boolean }>`
 `
 
 const Movie = styled.View`
-  margin-right: 20px;
+
   align-items: center;
 `;
 
@@ -43,8 +43,8 @@ const ListContainer = styled.View`
 `
 
 const HMovie = styled.View`
-  padding: 0 15px;
   flex-direction: row;
+  padding: 0 0 0 20px;
 `
 
 const HColumn = styled.View`
@@ -76,7 +76,7 @@ const Movies: React.FC<NativeStackScreenProps<any, "Movies">> = ({navigation: {n
 
     const isDark = useColorScheme() === "dark";
 
-    const [refreshing , setRefreshing] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
     const [nowPlayingMovies, setNowPlayingMovies] = useState([]);
     const [upcoming, setUpcoming] = useState([]);
@@ -118,8 +118,6 @@ const Movies: React.FC<NativeStackScreenProps<any, "Movies">> = ({navigation: {n
     }, [])
 
 
-
-
     return loading ?
         <Loader>
             <ActivityIndicator/>
@@ -127,77 +125,88 @@ const Movies: React.FC<NativeStackScreenProps<any, "Movies">> = ({navigation: {n
 
         :
         (
-            <Container refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
-                <Swiper
-                    horizontal
-                    loop
-                    autoplay={true}
-                    autoplayTimeout={3.5}
-                    showsButtons={false}
-                    showsPagination={false}
-                    containerStyle={{width: "100%", height: SCREEN_HEIGHT / 4, marginBottom: 30}}
-                >
-                    {
-                        nowPlayingMovies.map((movie: any) => {
-                            return (
-                                <Slider key={movie.id}
-                                        backdrop_path={makeImgPath(movie.backdrop_path)}
-                                        original_title={movie.original_title}
-                                        vote_average={movie.vote_average}
-                                        overview={movie.overview}
-                                        poster_path={movie.poster_path}
-                                />
-                            )
-                        })
-                    }
-                </Swiper>
-                <ListContainer>
-                    <ListTitle isDark={isDark}>Trending Movies</ListTitle>
-                    <ScrollView
-                        contentContainerStyle={{paddingLeft: 15}}
-                        horizontal={true}
-                        showsHorizontalScrollIndicator={false}>
-                        {trending?.map((movie: any) => {
-                            return (
-                                <Movie key={movie.id}>
-                                    <Poster path={makeImgPath(movie.poster_path)}/>
-                                    <Title
-                                        isDark={isDark}>{movie.original_title.slice(0, 13)}{movie.original_title.length > 13 && "..."}</Title>
-                                    <Vote isDark={isDark}>⭐️{movie.vote_average} / 10</Vote>
-                                </Movie>
-                            )
-                        })
-                        }
-                    </ScrollView>
-                </ListContainer>
-                <ComingSoonTitle isDark={isDark}>Coming Soon</ComingSoonTitle>
-                {upcoming.map((movie: any) => {
-                    return (
-                        <HMovie key={movie.id}>
-                            <Poster path={movie.poster_path}/>
-                            <HColumn>
-                                <Title isDark={isDark}>
-                                    {movie.original_title}{movie.original_title.length > 13 && "..."}
-                                </Title>
-                                <OverView isDark={isDark}>
-                                    {
-                                        movie.overview !== "" && movie.overview.length > 13 ?
-                                            `${movie.overview.slice(0, 120)}...`
-                                            :
-                                            movie.overview
-                                    }
-                                </OverView>
-                                <Release isDark={isDark}>
-                                    Coming : {new Date(movie.release_date).toLocaleDateString('ko', {
-                                    month: "long",
-                                    day: "numeric",
-                                    year: "numeric"
-                                })}
-                                </Release>
-                            </HColumn>
-                        </HMovie>
-                    )
-                })}
+            <Container
+                onRefresh={onRefresh}
+                refreshing={refreshing}
+                data={upcoming}
+                ListHeaderComponent={
+                    <>
+
+                        <Swiper
+                            horizontal
+                            loop
+                            autoplay={true}
+                            autoplayTimeout={3.5}
+                            showsButtons={false}
+                            showsPagination={false}
+                            containerStyle={{width: "100%", height: SCREEN_HEIGHT / 4, marginBottom: 30}}
+                        >
+                            {
+                                nowPlayingMovies.map((movie: any) => {
+                                    return (
+                                        <Slider key={movie.id}
+                                                backdrop_path={makeImgPath(movie.backdrop_path)}
+                                                original_title={movie.original_title}
+                                                vote_average={movie.vote_average}
+                                                overview={movie.overview}
+                                                poster_path={movie.poster_path}
+                                        />
+                                    )
+                                })
+                            }
+                        </Swiper>
+                        <ListContainer>
+                            <ListTitle isDark={isDark}>Trending Movies</ListTitle>
+                            <FlatList
+                                data={trending}
+                                horizontal={true}
+                                keyExtractor={(item) => item.id + ""}
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={{paddingHorizontal: 20}}
+                                ItemSeparatorComponent={() => (
+                                    <View style={{width: 20}}/>
+                                )}
+                                renderItem={({item: movie}: any) => (
+                                    <Movie key={movie.id}>
+                                        <Poster path={makeImgPath(movie.poster_path)}/>
+                                        <Title
+                                            isDark={isDark}>{movie.original_title.slice(0, 10)}{movie.original_title.length > 10 && "..."}</Title>
+                                        <Vote isDark={isDark}>⭐️{movie.vote_average} / 10</Vote>
+                                    </Movie>
+                                )}/>
+                        </ListContainer>
+                        <ComingSoonTitle isDark={isDark}>Coming Soon</ComingSoonTitle>
+                    </>
+                }
+                keyExtractor={(item) => item.id + ""}
+                ItemSeparatorComponent={() => <View style={{height: 13}}/>}
+                renderItem={({item: movie}: any) => (
+                    <HMovie key={movie.id}>
+                        <Poster path={movie.poster_path}/>
+                        <HColumn>
+                            <Title isDark={isDark}>
+                                {movie.original_title}{movie.original_title.length > 10 && "..."}
+                            </Title>
+                            <OverView isDark={isDark}>
+                                {
+                                    movie.overview !== "" && movie.overview.length > 10 ?
+                                        `${movie.overview.slice(0, 120)}...`
+                                        :
+                                        movie.overview
+                                }
+                            </OverView>
+                            <Release isDark={isDark}>
+                                Coming : {new Date(movie.release_date).toLocaleDateString('ko', {
+                                month: "long",
+                                day: "numeric",
+                                year: "numeric"
+                            })}
+                            </Release>
+                        </HColumn>
+                    </HMovie>
+                )}>
+
+
             </Container>
         )
 }
